@@ -1,0 +1,4 @@
+Credit Score,Geography,Gender,Age,Tenure,Balance,Num of Products,Has Credit Card,Is Active Member,Estimated Salary,Prediction,flag,username,timestamp
+600,Germany,Male,34.3,5,0,1,1,1,50000,,,,2026-06-10 21:21:52.140630
+400,Germany,Female,55.6,1,100000,1,1,1,50000,🔴 Churn (probability: 81.85%),,,2026-06-10 21:38:54.294783
+400,Germany,Female,55.6,1,100000,1,1,1,50000,🔴 Churn (probability: 81.85%),,,2026-06-10 21:38:56.828330

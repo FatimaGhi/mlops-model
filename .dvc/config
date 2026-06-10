@@ -1,0 +1,5 @@
+[core]
+    remote = myremote
+['remote "myremote"']
+    url = s3://mlops-mlflow-artifacts-709598629349/data
+    region = eu-west-1

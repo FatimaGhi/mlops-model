@@ -1,0 +1,15 @@
+# Data
+data/churn.csv
+data/processed/
+
+# Models
+models/
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+
+# DVC
+/tmp

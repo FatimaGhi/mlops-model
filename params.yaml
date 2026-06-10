@@ -1,0 +1,21 @@
+data:
+  test_size: 0.2
+  random_state: 42
+  target_column: Exited
+
+features:
+  drop_columns:
+    - RowNumber
+    - CustomerId
+    - Surname
+
+model:
+  n_estimators: 100
+  max_depth: 6
+  learning_rate: 0.1
+  random_state: 42
+  eval_metric: logloss
+
+mlflow:
+  experiment_name: churn-prediction
+  model_name: ChurnModel

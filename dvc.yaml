@@ -1,0 +1,39 @@
+stages:
+  preprocess:
+    cmd: python -m src.features
+    deps:
+      - data/churn.csv
+      - src/features.py
+      - src/data.py
+      - src/config.py
+    params:
+      - params.yaml:
+          - data
+          - features
+    outs:
+      - data/processed
+
+  train:
+    cmd: python -m src.train
+    deps:
+      - data/processed
+      - src/train.py
+      - src/evaluate.py
+      - src/config.py
+    params:
+      - params.yaml:
+          - model
+          - mlflow
+    outs:
+      - models/scaler.pkl
+      - models/encoder.pkl
+
+  evaluate:
+    cmd: python -m src.evaluate
+    deps:
+      - models/scaler.pkl
+      - models/encoder.pkl
+      - src/evaluate.py
+    metrics:
+      - metrics.json:
+          cache: false
