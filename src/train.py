@@ -6,7 +6,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    roc_auc_score
+    roc_auc_score,
 )
 import pandas as pd
 import numpy as np
@@ -16,11 +16,7 @@ from mlflow.tracking import MlflowClient
 from src.config import MODEL_PARAMS, MLFLOW_PARAMS
 from src.data import load_data, split_data
 from src.features import preprocess
-from src.evaluate import (
-    validate_data,
-    test_bias,
-    test_latency
-)
+from src.evaluate import validate_data, test_bias, test_latency
 
 
 def promote_model(run_id, metrics, threshold=0.80):
@@ -32,22 +28,18 @@ def promote_model(run_id, metrics, threshold=0.80):
         return False
 
     # Get latest version
-    versions = client.get_latest_versions(
-        MLFLOW_PARAMS["model_name"],
-        stages=["None"]
-    )
+    versions = client.get_latest_versions(MLFLOW_PARAMS["model_name"], stages=["None"])
 
     if versions:
         version = versions[-1].version
         client.transition_model_version_stage(
-            name=MLFLOW_PARAMS["model_name"],
-            version=version,
-            stage="Staging"
+            name=MLFLOW_PARAMS["model_name"], version=version, stage="Staging"
         )
         print(f"✅ Model v{version} promoted to Staging!")
         return True
 
     return False
+
 
 def train():
     # Load + split + preprocess
@@ -70,7 +62,7 @@ def train():
             learning_rate=MODEL_PARAMS["learning_rate"],
             random_state=MODEL_PARAMS["random_state"],
             eval_metric=MODEL_PARAMS["eval_metric"],
-            use_label_encoder=False
+            use_label_encoder=False,
         )
         model.fit(X_train_scaled, y_train)
 
@@ -78,18 +70,18 @@ def train():
         y_pred = model.predict(X_test_scaled)
         y_prob = model.predict_proba(X_test_scaled)[:, 1]
 
-        accuracy  = accuracy_score(y_test, y_pred)
+        accuracy = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred)
-        recall    = recall_score(y_test, y_pred)
-        f1        = f1_score(y_test, y_pred)
-        auc       = roc_auc_score(y_test, y_prob)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        auc = roc_auc_score(y_test, y_prob)
 
         metrics = {
-            "accuracy":  accuracy,
+            "accuracy": accuracy,
             "precision": precision,
-            "recall":    recall,
-            "f1":        f1,
-            "auc":       auc
+            "recall": recall,
+            "f1": f1,
+            "auc": auc,
         }
 
         # Log params + metrics
@@ -103,6 +95,7 @@ def train():
 
         # Bias + latency tests
         from src.features import GEOGRAPHY_MAP
+
         geo_col = X_test["Geography"].map(GEOGRAPHY_MAP).values
         test_bias(model, X_test_scaled, y_test.values, geo_col)
         test_latency(model, X_test_scaled)
@@ -111,7 +104,7 @@ def train():
         mlflow.xgboost.log_model(
             model,
             artifact_path="model",
-            registered_model_name=MLFLOW_PARAMS["model_name"]
+            registered_model_name=MLFLOW_PARAMS["model_name"],
         )
 
         print(f"✅ Model trained!")
@@ -125,10 +118,8 @@ def train():
         promote_model(metrics)
 
 
-
 if __name__ == "__main__":
     train()
-
 
     """Promote model to Staging if validation OK"""
     client = MlflowClient()
@@ -138,17 +129,12 @@ if __name__ == "__main__":
         return False
 
     # Get latest version
-    versions = client.get_latest_versions(
-        MLFLOW_PARAMS["model_name"],
-        stages=["None"]
-    )
+    versions = client.get_latest_versions(MLFLOW_PARAMS["model_name"], stages=["None"])
 
     if versions:
         version = versions[-1].version
         client.transition_model_version_stage(
-            name=MLFLOW_PARAMS["model_name"],
-            version=version,
-            stage="Staging"
+            name=MLFLOW_PARAMS["model_name"], version=version, stage="Staging"
         )
         print(f"✅ Model v{version} promoted to Staging!")
         return True

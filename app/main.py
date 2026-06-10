@@ -10,9 +10,8 @@ import time
 app = FastAPI(
     title="Churn Prediction API",
     description="XGBoost model for customer churn prediction",
-    version="1.0.0"
+    version="1.0.0",
 )
-
 
 
 logging.basicConfig(level=logging.INFO)
@@ -30,12 +29,8 @@ scaler = None
 async def load_model():
     global model, scaler
 
-    mlflow.set_tracking_uri(
-        os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
-    )
-    model = mlflow.xgboost.load_model(
-        "models:/ChurnModel/Production"
-    )
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
+    model = mlflow.xgboost.load_model("models:/ChurnModel/Production")
     scaler = joblib.load("models/scaler.pkl")
     print("✅ Model loaded!")
 
@@ -76,7 +71,7 @@ def predict(data: CustomerData):
 
         prediction = model.predict(X_scaled)[0]
         probability = model.predict_proba(X_scaled)[0][1]
-        
+
         latency = (time.time() - start) * 1000
         logger.info(
             f"prediction={prediction} "
@@ -88,7 +83,7 @@ def predict(data: CustomerData):
             "prediction": int(prediction),
             "probability": round(float(probability), 4),
             "label": "Churn" if prediction == 1 else "No Churn",
-            "latency_ms": round(latency, 2)
+            "latency_ms": round(latency, 2),
         }
 
     except Exception as e:

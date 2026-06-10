@@ -7,7 +7,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
-    confusion_matrix
+    confusion_matrix,
 )
 
 
@@ -16,11 +16,11 @@ def evaluate_model(model, X_test, y_test):
     y_prob = model.predict_proba(X_test)[:, 1]
 
     metrics = {
-        "accuracy":  accuracy_score(y_test, y_pred),
+        "accuracy": accuracy_score(y_test, y_pred),
         "precision": precision_score(y_test, y_pred),
-        "recall":    recall_score(y_test, y_pred),
-        "f1":        f1_score(y_test, y_pred),
-        "auc":       roc_auc_score(y_test, y_prob)
+        "recall": recall_score(y_test, y_pred),
+        "f1": f1_score(y_test, y_pred),
+        "auc": roc_auc_score(y_test, y_prob),
     }
 
     cm = confusion_matrix(y_test, y_pred)
@@ -33,9 +33,7 @@ def evaluate_model(model, X_test, y_test):
 
     # Validation threshold
     if metrics["accuracy"] < 0.80:
-        raise ValueError(
-            f"❌ Accuracy {metrics['accuracy']:.2f} below threshold 0.80!"
-        )
+        raise ValueError(f"❌ Accuracy {metrics['accuracy']:.2f} below threshold 0.80!")
 
     return metrics
 
@@ -48,8 +46,6 @@ def validate_data(df):
     print("✅ Data validation passed!")
 
 
-
-
 def check_bias(model, X_test, y_test, geography_col):
     """Test équité/biais par Geography"""
     results = {}
@@ -57,10 +53,7 @@ def check_bias(model, X_test, y_test, geography_col):
         mask = geography_col == geo_val
         if mask.sum() == 0:
             continue
-        acc = accuracy_score(
-            y_test[mask],
-            model.predict(X_test[mask])
-        )
+        acc = accuracy_score(y_test[mask], model.predict(X_test[mask]))
         results[geo_name] = acc
         print(f"   {geo_name}: {acc:.4f}")
 
@@ -79,8 +72,7 @@ def check_latency(model, X_test, max_latency_ms=100):
     model.predict(sample)
     elapsed = (time.time() - start) * 1000
 
-    assert elapsed < max_latency_ms, \
-        f"❌ Latency {elapsed:.1f}ms > {max_latency_ms}ms"
+    assert elapsed < max_latency_ms, f"❌ Latency {elapsed:.1f}ms > {max_latency_ms}ms"
     print(f"✅ Latency passed! {elapsed:.1f}ms")
     return elapsed
 

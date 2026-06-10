@@ -8,6 +8,7 @@ import os
 GEOGRAPHY_MAP = {"France": 0, "Germany": 1, "Spain": 2}
 GENDER_MAP = {"Male": 0, "Female": 1}
 
+
 def preprocess(X_train, X_test):
     # Drop useless columns
     drop_cols = FEATURE_PARAMS["drop_columns"]

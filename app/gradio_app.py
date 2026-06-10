@@ -4,6 +4,7 @@ import json
 
 API_URL = "http://localhost:8000/predict"
 
+
 def predict_churn(
     credit_score,
     geography,
@@ -14,7 +15,7 @@ def predict_churn(
     num_products,
     has_cr_card,
     is_active_member,
-    estimated_salary
+    estimated_salary,
 ):
     data = {
         "CreditScore": credit_score,
@@ -26,14 +27,14 @@ def predict_churn(
         "NumOfProducts": num_products,
         "HasCrCard": has_cr_card,
         "IsActiveMember": is_active_member,
-        "EstimatedSalary": estimated_salary
+        "EstimatedSalary": estimated_salary,
     }
 
     response = requests.post(API_URL, json=data)
     result = response.json()
 
     label = result["label"]
-    prob  = result["probability"]
+    prob = result["probability"]
 
     color = "🔴" if label == "Churn" else "🟢"
     return f"{color} {label} (probability: {prob:.2%})"
@@ -44,15 +45,9 @@ demo = gr.Interface(
     inputs=[
         gr.Number(label="Credit Score", value=600),
         gr.Dropdown(
-            choices=["France", "Germany", "Spain"],
-            label="Geography",
-            value="France"
+            choices=["France", "Germany", "Spain"], label="Geography", value="France"
         ),
-        gr.Dropdown(
-            choices=["Male", "Female"],
-            label="Gender",
-            value="Male"
-        ),
+        gr.Dropdown(choices=["Male", "Female"], label="Gender", value="Male"),
         gr.Slider(minimum=18, maximum=92, label="Age", value=35),
         gr.Slider(minimum=0, maximum=10, label="Tenure", value=5),
         gr.Number(label="Balance", value=0),
@@ -63,7 +58,7 @@ demo = gr.Interface(
     ],
     outputs=gr.Textbox(label="Prediction"),
     title="🏦 Customer Churn Prediction",
-    description="Predict if a customer will churn using XGBoost model"
+    description="Predict if a customer will churn using XGBoost model",
 )
 
 if __name__ == "__main__":

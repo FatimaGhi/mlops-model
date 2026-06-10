@@ -34,5 +34,5 @@ def predict(data: dict):
     return {
         "prediction": int(prediction),
         "probability": float(probability),
-        "label": "Churn" if prediction == 1 else "No Churn"
+        "label": "Churn" if prediction == 1 else "No Churn",
     }

@@ -4,35 +4,32 @@ import pandas as pd
 import joblib
 import mlflow.xgboost
 from src.config import MLFLOW_PARAMS
-from src.evaluate import (
-    validate_data,
-    check_bias,        
-    check_latency,      
-    check_data_integrity 
-)
+from src.evaluate import validate_data, check_bias, check_latency, check_data_integrity
 from src.features import GEOGRAPHY_MAP, GENDER_MAP
-
 
 # ─── Fixtures ─────────────────────────────────────────────
 
+
 @pytest.fixture
 def sample_df():
-    return pd.DataFrame({
-        "RowNumber": [1, 2],
-        "CustomerId": [1001, 1002],
-        "Surname": ["Smith", "Jones"],
-        "CreditScore": [600, 700],
-        "Geography": ["France", "Germany"],
-        "Gender": ["Male", "Female"],
-        "Age": [35, 45],
-        "Tenure": [5, 3],
-        "Balance": [0, 50000],
-        "NumOfProducts": [1, 2],
-        "HasCrCard": [1, 0],
-        "IsActiveMember": [1, 1],
-        "EstimatedSalary": [50000, 80000],
-        "Exited": [0, 1]
-    })
+    return pd.DataFrame(
+        {
+            "RowNumber": [1, 2],
+            "CustomerId": [1001, 1002],
+            "Surname": ["Smith", "Jones"],
+            "CreditScore": [600, 700],
+            "Geography": ["France", "Germany"],
+            "Gender": ["Male", "Female"],
+            "Age": [35, 45],
+            "Tenure": [5, 3],
+            "Balance": [0, 50000],
+            "NumOfProducts": [1, 2],
+            "HasCrCard": [1, 0],
+            "IsActiveMember": [1, 1],
+            "EstimatedSalary": [50000, 80000],
+            "Exited": [0, 1],
+        }
+    )
 
 
 @pytest.fixture
@@ -46,6 +43,7 @@ def model_and_scaler():
 
 
 # ─── Tests ────────────────────────────────────────────────
+
 
 def test_data_integrity_pass(sample_df):
     """Data integrity test"""
@@ -69,18 +67,22 @@ def test_model_predict(model_and_scaler):
     """Model should return valid predictions"""
     model, scaler = model_and_scaler
 
-    X = pd.DataFrame([{
-        "CreditScore": 600,
-        "Geography": 0,
-        "Gender": 0,
-        "Age": 35,
-        "Tenure": 5,
-        "Balance": 0,
-        "NumOfProducts": 1,
-        "HasCrCard": 1,
-        "IsActiveMember": 1,
-        "EstimatedSalary": 50000
-    }])
+    X = pd.DataFrame(
+        [
+            {
+                "CreditScore": 600,
+                "Geography": 0,
+                "Gender": 0,
+                "Age": 35,
+                "Tenure": 5,
+                "Balance": 0,
+                "NumOfProducts": 1,
+                "HasCrCard": 1,
+                "IsActiveMember": 1,
+                "EstimatedSalary": 50000,
+            }
+        ]
+    )
 
     X_scaled = scaler.transform(X)
     pred = model.predict(X_scaled)
@@ -110,12 +112,23 @@ def test_latency_inference(model_and_scaler):
     """Inference latency < 100ms for 100 samples"""
     model, scaler = model_and_scaler
 
-    X = pd.DataFrame([{
-        "CreditScore": 600, "Geography": 0, "Gender": 0,
-        "Age": 35, "Tenure": 5, "Balance": 0,
-        "NumOfProducts": 1, "HasCrCard": 1,
-        "IsActiveMember": 1, "EstimatedSalary": 50000
-    }] * 100)
+    X = pd.DataFrame(
+        [
+            {
+                "CreditScore": 600,
+                "Geography": 0,
+                "Gender": 0,
+                "Age": 35,
+                "Tenure": 5,
+                "Balance": 0,
+                "NumOfProducts": 1,
+                "HasCrCard": 1,
+                "IsActiveMember": 1,
+                "EstimatedSalary": 50000,
+            }
+        ]
+        * 100
+    )
 
     X_scaled = scaler.transform(X)
     check_latency(model, X_scaled, max_latency_ms=100)
@@ -130,10 +143,9 @@ def test_api_health():
     # Mock model o scaler
     import joblib
     import mlflow.xgboost
+
     mlflow.set_tracking_uri("http://localhost:5000")
-    main_module.model = mlflow.xgboost.load_model(
-        "models:/ChurnModel/Production"
-    )
+    main_module.model = mlflow.xgboost.load_model("models:/ChurnModel/Production")
     main_module.scaler = joblib.load("models/scaler.pkl")
 
     client = TestClient(app)
@@ -151,25 +163,27 @@ def test_api_predict():
     # Mock model o scaler
     import joblib
     import mlflow.xgboost
+
     mlflow.set_tracking_uri("http://localhost:5000")
-    main_module.model = mlflow.xgboost.load_model(
-        "models:/ChurnModel/Production"
-    )
+    main_module.model = mlflow.xgboost.load_model("models:/ChurnModel/Production")
     main_module.scaler = joblib.load("models/scaler.pkl")
 
     client = TestClient(app)
-    response = client.post("/predict", json={
-        "CreditScore": 600,
-        "Geography": "France",
-        "Gender": "Male",
-        "Age": 35,
-        "Tenure": 5,
-        "Balance": 0,
-        "NumOfProducts": 1,
-        "HasCrCard": 1,
-        "IsActiveMember": 1,
-        "EstimatedSalary": 50000
-    })
+    response = client.post(
+        "/predict",
+        json={
+            "CreditScore": 600,
+            "Geography": "France",
+            "Gender": "Male",
+            "Age": 35,
+            "Tenure": 5,
+            "Balance": 0,
+            "NumOfProducts": 1,
+            "HasCrCard": 1,
+            "IsActiveMember": 1,
+            "EstimatedSalary": 50000,
+        },
+    )
 
     assert response.status_code == 200
     data = response.json()
