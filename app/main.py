@@ -4,12 +4,20 @@ import mlflow.xgboost
 import joblib
 import pandas as pd
 import os
+import logging
+import time
 
 app = FastAPI(
     title="Churn Prediction API",
     description="XGBoost model for customer churn prediction",
     version="1.0.0"
 )
+
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 GEOGRAPHY_MAP = {"France": 0, "Germany": 1, "Spain": 2}
 GENDER_MAP = {"Male": 0, "Female": 1}
@@ -57,6 +65,7 @@ def health():
 
 @app.post("/predict")
 def predict(data: CustomerData):
+    start = time.time()
     try:
         df = pd.DataFrame([data.dict()])
 
@@ -67,12 +76,21 @@ def predict(data: CustomerData):
 
         prediction = model.predict(X_scaled)[0]
         probability = model.predict_proba(X_scaled)[0][1]
+        
+        latency = (time.time() - start) * 1000
+        logger.info(
+            f"prediction={prediction} "
+            f"prob={probability:.4f} "
+            f"latency={latency:.1f}ms"
+        )
 
         return {
             "prediction": int(prediction),
             "probability": round(float(probability), 4),
-            "label": "Churn" if prediction == 1 else "No Churn"
+            "label": "Churn" if prediction == 1 else "No Churn",
+            "latency_ms": round(latency, 2)
         }
 
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

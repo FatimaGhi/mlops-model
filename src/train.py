@@ -11,14 +11,49 @@ from sklearn.metrics import (
 import pandas as pd
 import numpy as np
 
+from mlflow.tracking import MlflowClient
+
 from src.config import MODEL_PARAMS, MLFLOW_PARAMS
 from src.data import load_data, split_data
 from src.features import preprocess
+from src.evaluate import (
+    validate_data,
+    test_bias,
+    test_latency
+)
 
+
+def promote_model(run_id, metrics, threshold=0.80):
+    """Promote model to Staging if validation OK"""
+    client = MlflowClient()
+
+    if metrics["accuracy"] < threshold:
+        print(f"❌ Model rejected — accuracy {metrics['accuracy']:.2f}")
+        return False
+
+    # Get latest version
+    versions = client.get_latest_versions(
+        MLFLOW_PARAMS["model_name"],
+        stages=["None"]
+    )
+
+    if versions:
+        version = versions[-1].version
+        client.transition_model_version_stage(
+            name=MLFLOW_PARAMS["model_name"],
+            version=version,
+            stage="Staging"
+        )
+        print(f"✅ Model v{version} promoted to Staging!")
+        return True
+
+    return False
 
 def train():
     # Load + split + preprocess
     df = load_data()
+    validate_data(df)
+
     X_train, X_test, y_train, y_test = split_data(df)
     X_train_scaled, X_test_scaled = preprocess(X_train, X_test)
 
@@ -49,22 +84,28 @@ def train():
         f1        = f1_score(y_test, y_pred)
         auc       = roc_auc_score(y_test, y_prob)
 
-        # Log params
-        mlflow.log_params(MODEL_PARAMS)
-
-        # Log metrics
-        mlflow.log_metrics({
+        metrics = {
             "accuracy":  accuracy,
             "precision": precision,
             "recall":    recall,
             "f1":        f1,
             "auc":       auc
-        })
+        }
 
-        # Validation — accuracy > 0.80
+        # Log params + metrics
+        mlflow.log_params(MODEL_PARAMS)
+        mlflow.log_metrics(metrics)
+
+        # Validation
         if accuracy < 0.80:
             print(f"❌ Accuracy {accuracy:.2f} < 0.80 — model rejected!")
             return
+
+        # Bias + latency tests
+        from src.features import GEOGRAPHY_MAP
+        geo_col = X_test["Geography"].map(GEOGRAPHY_MAP).values
+        test_bias(model, X_test_scaled, y_test.values, geo_col)
+        test_latency(model, X_test_scaled)
 
         # Log model
         mlflow.xgboost.log_model(
@@ -80,6 +121,36 @@ def train():
         print(f"   F1:        {f1:.4f}")
         print(f"   AUC:       {auc:.4f}")
 
+        # Promote to Staging
+        promote_model(metrics)
+
+
 
 if __name__ == "__main__":
     train()
+
+
+    """Promote model to Staging if validation OK"""
+    client = MlflowClient()
+
+    if metrics["accuracy"] < threshold:
+        print(f"❌ Model rejected — accuracy {metrics['accuracy']:.2f}")
+        return False
+
+    # Get latest version
+    versions = client.get_latest_versions(
+        MLFLOW_PARAMS["model_name"],
+        stages=["None"]
+    )
+
+    if versions:
+        version = versions[-1].version
+        client.transition_model_version_stage(
+            name=MLFLOW_PARAMS["model_name"],
+            version=version,
+            stage="Staging"
+        )
+        print(f"✅ Model v{version} promoted to Staging!")
+        return True
+
+    return False
