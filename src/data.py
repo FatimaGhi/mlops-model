@@ -1,7 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from src.config import RAW_DATA_PATH, DATA_PARAMS
-import os
 
 
 def load_data():

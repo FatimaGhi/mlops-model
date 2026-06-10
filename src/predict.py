@@ -1,5 +1,4 @@
 import joblib
-import numpy as np
 import pandas as pd
 import mlflow.xgboost
 from src.config import MLFLOW_PARAMS

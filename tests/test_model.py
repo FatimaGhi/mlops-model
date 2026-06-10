@@ -1,11 +1,9 @@
 import pytest
-import numpy as np
 import pandas as pd
 import joblib
 import mlflow.xgboost
 from src.config import MLFLOW_PARAMS
-from src.evaluate import validate_data, check_bias, check_latency, check_data_integrity
-from src.features import GEOGRAPHY_MAP, GENDER_MAP
+from src.evaluate import validate_data, check_latency
 
 # ─── Fixtures ─────────────────────────────────────────────
 

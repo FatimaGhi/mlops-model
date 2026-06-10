@@ -8,8 +8,6 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
 )
-import pandas as pd
-import numpy as np
 
 from mlflow.tracking import MlflowClient
 
@@ -107,7 +105,7 @@ def train():
             registered_model_name=MLFLOW_PARAMS["model_name"],
         )
 
-        print(f"✅ Model trained!")
+        print("✅ Model trained!")
         print(f"   Accuracy:  {accuracy:.4f}")
         print(f"   Precision: {precision:.4f}")
         print(f"   Recall:    {recall:.4f}")
@@ -115,28 +113,8 @@ def train():
         print(f"   AUC:       {auc:.4f}")
 
         # Promote to Staging
-        promote_model(metrics)
+        promote_model(mlflow.active_run().info.run_id, metrics)
 
 
 if __name__ == "__main__":
     train()
-
-    """Promote model to Staging if validation OK"""
-    client = MlflowClient()
-
-    if metrics["accuracy"] < threshold:
-        print(f"❌ Model rejected — accuracy {metrics['accuracy']:.2f}")
-        return False
-
-    # Get latest version
-    versions = client.get_latest_versions(MLFLOW_PARAMS["model_name"], stages=["None"])
-
-    if versions:
-        version = versions[-1].version
-        client.transition_model_version_stage(
-            name=MLFLOW_PARAMS["model_name"], version=version, stage="Staging"
-        )
-        print(f"✅ Model v{version} promoted to Staging!")
-        return True
-
-    return False

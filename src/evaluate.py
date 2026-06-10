@@ -1,5 +1,3 @@
-import mlflow
-import numpy as np
 import time
 from sklearn.metrics import (
     accuracy_score,

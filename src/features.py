@@ -1,4 +1,3 @@
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from src.config import FEATURE_PARAMS
 import joblib
