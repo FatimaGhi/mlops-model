@@ -1,0 +1,98 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python -m src.features
+    deps:
+    - path: data/churn.csv
+      hash: md5
+      md5: 496aee8fbfdfa1dfb6daa9dbca5d1a01
+      size: 684858
+    - path: src/config.py
+      hash: md5
+      md5: e3ddd51c10e884b25469f4ca7a4b171d
+      size: 464
+    - path: src/data.py
+      hash: md5
+      md5: 0194577a351143dfea58030e3855a487
+      size: 608
+    - path: src/features.py
+      hash: md5
+      md5: 748da1f353952a434a0616be03e0abdb
+      size: 1798
+    params:
+      params.yaml:
+        data:
+          test_size: 0.2
+          random_state: 42
+          target_column: Exited
+        features:
+          drop_columns:
+          - RowNumber
+          - CustomerId
+          - Surname
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: ddf4070b19fe489faaafd574746e5c4f.dir
+      size: 880512
+      nfiles: 4
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: ddf4070b19fe489faaafd574746e5c4f.dir
+      size: 880512
+      nfiles: 4
+    - path: src/config.py
+      hash: md5
+      md5: e3ddd51c10e884b25469f4ca7a4b171d
+      size: 464
+    - path: src/evaluate.py
+      hash: md5
+      md5: 30a978a799894fee4715daa5e69b656a
+      size: 3242
+    - path: src/train.py
+      hash: md5
+      md5: 66bf8ee2b0edd53666eef59e001fca44
+      size: 3619
+    params:
+      params.yaml:
+        mlflow:
+          experiment_name: churn-prediction
+          model_name: ChurnModel
+        model:
+          n_estimators: 100
+          max_depth: 6
+          learning_rate: 0.1
+          random_state: 42
+          eval_metric: logloss
+    outs:
+    - path: models/encoder.pkl
+      hash: md5
+      md5: c968635b9010657500b428f79bedf7f7
+      size: 98
+    - path: models/scaler.pkl
+      hash: md5
+      md5: e2507089991d291823f7bc622ba28316
+      size: 1319
+  evaluate:
+    cmd: python -m src.evaluate
+    deps:
+    - path: models/encoder.pkl
+      hash: md5
+      md5: c968635b9010657500b428f79bedf7f7
+      size: 98
+    - path: models/scaler.pkl
+      hash: md5
+      md5: e2507089991d291823f7bc622ba28316
+      size: 1319
+    - path: src/evaluate.py
+      hash: md5
+      md5: 30a978a799894fee4715daa5e69b656a
+      size: 3242
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 18a3046b390e3af095b9ae9497586a24
+      size: 153

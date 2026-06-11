@@ -82,3 +82,25 @@ def check_data_integrity(df):
     assert df["Exited"].nunique() == 2, "❌ Binary target expected!"
     assert df.isnull().sum().sum() == 0 or True, "⚠️ Nulls"
     print("✅ Data integrity passed!")
+
+
+if __name__ == "__main__":
+    import json
+    import numpy as np
+    import joblib
+    import mlflow.xgboost
+
+    mlflow.set_tracking_uri("http://localhost:5000")
+
+    model = mlflow.xgboost.load_model("models:/ChurnModel/Production")
+    scaler = joblib.load("models/scaler.pkl")
+
+    X_test = np.load("data/processed/X_test.npy")
+    y_test = np.load("data/processed/y_test.npy")
+
+    metrics = evaluate_model(model, X_test, y_test)
+
+    with open("metrics.json", "w") as f:
+        json.dump(metrics, f, indent=2)
+
+    print("✅ Metrics saved to metrics.json")

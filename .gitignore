@@ -13,3 +13,10 @@ venv/
 
 # DVC
 /tmp
+
+
+metrics.json
+
+# MLflow local
+mlruns/
+mlartifacts/
