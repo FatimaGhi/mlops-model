@@ -9,11 +9,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY src/ ./src/
 COPY app/ ./app/
-COPY models/ ./models/ 
+
 COPY params.yaml .
 
-# Create models directory
-RUN mkdir -p models
 
 # Expose ports
 EXPOSE 8000 7860
