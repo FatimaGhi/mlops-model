@@ -14,7 +14,7 @@ from mlflow.tracking import MlflowClient
 from src.config import MODEL_PARAMS, MLFLOW_PARAMS
 from src.data import load_data, split_data
 from src.features import preprocess
-from src.evaluate import validate_data, test_bias, test_latency
+from src.evaluate import validate_data, check_bias, check_latency
 
 
 def promote_model(run_id, metrics, threshold=0.80):
@@ -95,8 +95,8 @@ def train():
         from src.features import GEOGRAPHY_MAP
 
         geo_col = X_test["Geography"].map(GEOGRAPHY_MAP).values
-        test_bias(model, X_test_scaled, y_test.values, geo_col)
-        test_latency(model, X_test_scaled)
+        check_bias(model, X_test_scaled, y_test.values, geo_col)
+        check_latency(model, X_test_scaled)
 
         # Log model
         mlflow.xgboost.log_model(

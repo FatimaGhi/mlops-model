@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/267418281351702498/99f70767fe734b97987f380226c2073f/artifacts
+end_time: 1781166557965
+entry_point_name: ''
+experiment_id: '267418281351702498'
+lifecycle_stage: active
+run_id: 99f70767fe734b97987f380226c2073f
+run_name: languid-hog-918
+run_uuid: 99f70767fe734b97987f380226c2073f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1781166542805
+status: 3
+tags: []
+user_id: fatima
