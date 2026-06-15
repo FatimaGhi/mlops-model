@@ -105,6 +105,8 @@ def train():
             registered_model_name=MLFLOW_PARAMS["model_name"],
         )
 
+        mlflow.log_artifact("models/scaler.pkl", artifact_path="scaler")
+
         print("✅ Model trained!")
         print(f"   Accuracy:  {accuracy:.4f}")
         print(f"   Precision: {precision:.4f}")

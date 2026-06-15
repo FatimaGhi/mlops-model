@@ -30,8 +30,16 @@ async def load_model():
     global model, scaler
 
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
+
     model = mlflow.xgboost.load_model("models:/ChurnModel/Production")
-    scaler = joblib.load("models/scaler.pkl")
+
+    # Load scaler men MLflow artifacts
+    client = mlflow.tracking.MlflowClient()
+    versions = client.get_latest_versions("ChurnModel", stages=["Production"])
+    run_id = versions[0].run_id
+    scaler_path = client.download_artifacts(run_id, "scaler/scaler.pkl")
+    scaler = joblib.load(scaler_path)
+
     print("✅ Model loaded!")
 
 
