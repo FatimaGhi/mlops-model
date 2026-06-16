@@ -66,6 +66,21 @@ def health():
     return {"status": "healthy"}
 
 
+@app.get("/model-info")
+def model_info():
+    client = mlflow.tracking.MlflowClient()
+    versions = client.get_latest_versions("ChurnModel", stages=["Production"])
+    if versions:
+        v = versions[0]
+        return {
+            "model_name": v.name,
+            "version": v.version,
+            "stage": v.current_stage,
+            "run_id": v.run_id,
+        }
+    return {"error": "No production model found"}
+
+
 @app.post("/predict")
 def predict(data: CustomerData):
     start = time.time()
