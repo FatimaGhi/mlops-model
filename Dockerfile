@@ -11,6 +11,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY src/ ./src/
 COPY app/ ./app/
+COPY dvc.yaml .
+COPY .dvc/ ./.dvc/
+COPY data/churn.csv.dvc ./data/churn.csv.dvc
+
+RUN git init && git config user.email "ci@mlops.com" && git config user.name "CI"
+
 
 COPY params.yaml .
 
