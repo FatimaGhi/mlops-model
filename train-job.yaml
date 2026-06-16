@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train-churn-model
+  namespace: mlflow
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      serviceAccountName: mlflow
+      containers:
+        - name: train
+          image: 709598629349.dkr.ecr.eu-west-1.amazonaws.com/model-serving:latest
+          command: ["python", "-m", "src.train"]
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: "http://mlflow.mlflow.svc.cluster.local:5000"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+      restartPolicy: Never
+  backoffLimit: 1
