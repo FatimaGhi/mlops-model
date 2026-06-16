@@ -14,7 +14,10 @@ spec:
           command: 
             - /bin/sh
             - -c
-            - "dvc pull && python -m src.train"
+            - |
+              mkdir -p data && \
+              aws s3 cp s3://mlops-mlflow-artifacts-709598629349/data/files/md5/ca/187d458f9e0fa5e46505c36d7949e9 data/churn.csv && \
+              python -m src.train
           env:
             - name: MLFLOW_TRACKING_URI
               value: "http://mlflow.mlflow.svc.cluster.local:5000"

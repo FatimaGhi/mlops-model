@@ -2,8 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install git + dependencies
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y awscli && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
 COPY requirements.txt .
@@ -14,11 +13,7 @@ COPY src/ ./src/
 COPY app/ ./app/
 
 COPY params.yaml .
-COPY dvc.yaml .
-COPY .dvc/ ./.dvc/        
 
-# Initialize git repo (required for DVC)
-RUN git init && git config user.email "ci@mlops.com" && git config user.name "CI"
 
 # Expose ports
 EXPOSE 8000 7860
