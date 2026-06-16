@@ -8,6 +8,7 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
 )
+import os
 
 from mlflow.tracking import MlflowClient
 
@@ -48,7 +49,7 @@ def train():
     X_train_scaled, X_test_scaled = preprocess(X_train, X_test)
 
     # MLflow
-    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
     mlflow.set_experiment(MLFLOW_PARAMS["experiment_name"])
 
     with mlflow.start_run():
