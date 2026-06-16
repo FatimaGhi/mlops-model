@@ -11,6 +11,9 @@ COPY src/ ./src/
 COPY app/ ./app/
 
 COPY params.yaml .
+COPY dvc.yaml .
+COPY .dvc/ ./.dvc/        
+COPY data/.gitignore ./data/.gitignore
 
 
 # Expose ports
