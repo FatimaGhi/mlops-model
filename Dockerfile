@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y awscli && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git awscli && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
 COPY requirements.txt .
@@ -15,11 +15,10 @@ COPY dvc.yaml .
 COPY .dvc/ ./.dvc/
 COPY data/churn.csv.dvc ./data/churn.csv.dvc
 
-RUN git init && git config user.email "ci@mlops.com" && git config user.name "CI"
-
 
 COPY params.yaml .
 
+RUN git init && git config user.email "ci@mlops.com" && git config user.name "CI"
 
 # Expose ports
 EXPOSE 8000 7860
