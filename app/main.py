@@ -7,10 +7,29 @@ import os
 import logging
 import time
 
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter, Histogram
+
 app = FastAPI(
     title="Churn Prediction API",
     description="XGBoost model for customer churn prediction",
     version="1.0.0",
+)
+# Prometheus
+Instrumentator().instrument(app).expose(app)
+
+PREDICTIONS_TOTAL = Counter("churn_predictions_total", "Total predictions", ["label"])
+
+PREDICTION_LATENCY = Histogram(
+    "churn_prediction_latency_seconds",
+    "Prediction latency",
+    buckets=[0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0],
+)
+
+CHURN_PROBABILITY = Histogram(
+    "churn_probability",
+    "Churn probability distribution",
+    buckets=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
 )
 
 
@@ -95,7 +114,13 @@ def predict(data: CustomerData):
         prediction = model.predict(X_scaled)[0]
         probability = model.predict_proba(X_scaled)[0][1]
 
-        latency = (time.time() - start) * 1000
+        latency = time.time() - start
+        label = "Churn" if prediction == 1 else "No Churn"
+
+        # Prometheus metrics
+        PREDICTIONS_TOTAL.labels(label=label).inc()
+        PREDICTION_LATENCY.observe(latency)
+        CHURN_PROBABILITY.observe(float(probability))
         logger.info(
             f"prediction={prediction} "
             f"prob={probability:.4f} "
@@ -105,8 +130,8 @@ def predict(data: CustomerData):
         return {
             "prediction": int(prediction),
             "probability": round(float(probability), 4),
-            "label": "Churn" if prediction == 1 else "No Churn",
-            "latency_ms": round(latency, 2),
+            "label": label,
+            "latency_ms": round(latency * 1000, 2),
         }
 
     except Exception as e:
