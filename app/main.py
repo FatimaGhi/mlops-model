@@ -6,6 +6,9 @@ import pandas as pd
 import os
 import logging
 import time
+import boto3
+import json
+from datetime import datetime
 
 from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_client import Counter, Histogram
@@ -126,6 +129,7 @@ def predict(data: CustomerData):
             f"prob={probability:.4f} "
             f"latency={latency:.1f}ms"
         )
+        save_to_s3(data, prediction, probability)
 
         return {
             "prediction": int(prediction),
@@ -137,3 +141,27 @@ def predict(data: CustomerData):
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def save_to_s3(data, prediction, probability):
+    try:
+        s3 = boto3.client("s3", region_name="eu-west-1")
+        row = {
+            "timestamp": datetime.now().isoformat(),
+            "CreditScore": data.CreditScore,
+            "Geography": data.Geography,
+            "Gender": data.Gender,
+            "Age": data.Age,
+            "Balance": data.Balance,
+            "NumOfProducts": data.NumOfProducts,
+            "IsActiveMember": data.IsActiveMember,
+            "prediction": int(prediction),
+            "probability": float(probability),
+        }
+        s3.put_object(
+            Bucket="mlops-mlflow-artifacts-709598629349",
+            Key=f"production-data/{datetime.now().date()}/{datetime.now().timestamp()}.json",
+            Body=json.dumps(row),
+        )
+    except Exception as e:
+        logger.error(f"S3 save error: {str(e)}")
